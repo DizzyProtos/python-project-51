@@ -10,5 +10,5 @@ lint:
 check:
 	poetry run pytest tests
 
-test-coverate:
+test-coverage:
 	poetry run pytest --cov=page_loader tests --cov-report xml
