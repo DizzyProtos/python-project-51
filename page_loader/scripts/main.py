@@ -1,10 +1,5 @@
-import sys
-import os
 import argparse
 from page_loader.loader import download
-
-
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 
 
 def main(*args, **kwargs):
