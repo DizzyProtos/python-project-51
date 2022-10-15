@@ -36,7 +36,7 @@ def test_page_loader():
     with open(output_file, 'r') as f:
         downloaded_text= f.read()
     assert check_if_resource_exists(downloaded_text, save_folder)
-    downloaded_website = soup(downloaded_text)
+    downloaded_website = soup(downloaded_text, 'html.parser')
     for tag in downloaded_website.find_all():
         tag.attrs.pop('src', None)
     with open('tests/fixtures/correct_page.html', 'r') as f:

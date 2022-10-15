@@ -5,7 +5,7 @@ install:
 	poetry install
 
 lint:
-	poetry run flake8 .\page_loader\
+	poetry run flake8 page_loader
 
 check:
 	poetry run pytest tests
