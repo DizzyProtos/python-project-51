@@ -33,11 +33,6 @@ def _download_resource(resource_url, save_folder):
 
 
 def _get_page(page_url, save_folder):
-    print('_________________________')
-    print(page_url)
-    print(save_folder)
-    print('_________________________')
-    
     if page_url[-1] == '/':
         page_url = page_url[:-1]
 
@@ -47,6 +42,7 @@ def _get_page(page_url, save_folder):
     logger.info(f'Dowloading {page_url}')
     bar = Bar('Downloading', max=100)
     response = re.get(page_url)
+    logger.info(f'Got {page_url} successfully')
     bar.next(20)
 
     website = soup(response.text, 'html.parser')
