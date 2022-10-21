@@ -53,3 +53,8 @@ def test_page_loader():
 def test_connection_error():
     with pytest.raises(ConnectionError) as e:
         download('http://badqwref23site.com', './connection_error/')
+
+
+def test_non_existing_path():
+    with pytest.raises(IOError) as e:
+        download('http://google.com', './ioerror/ioerror/ioerror/')

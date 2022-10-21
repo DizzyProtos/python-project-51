@@ -36,7 +36,7 @@ def download(page_url, save_folder):
         page_url = page_url[:-1]
 
     if not os.path.isdir(save_folder):
-        os.makedirs(save_folder)
+        raise IOError(f'path {save_folder} does not exist')
 
     logger.info(f'Dowloading {page_url}')
     bar = Bar('Downloading', max=100)
