@@ -72,3 +72,4 @@ def download(page_url, save_folder):
     logger.info(f'Saving page to {save_file_path}')
     with open(save_file_path, 'w', encoding='utf-8') as html:
         html.write(website.prettify())
+    return save_file_path

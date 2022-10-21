@@ -32,9 +32,8 @@ def test_page_loader():
         os.mkdir(save_folder)
     with requests_mock.Mocker(real_http=True) as m:
         m.get(site_url, text=page_text)
-        download(site_url, save_folder)
+        output_file = download(site_url, save_folder)
 
-    output_file = os.path.join(save_folder, 'test-test.html')
     with open(output_file, 'r') as f:
         downloaded_text= f.read()
     assert check_if_resource_exists(downloaded_text, save_folder)
@@ -53,4 +52,4 @@ def test_page_loader():
 
 def test_connection_error():
     with pytest.raises(ConnectionError) as e:
-        download('http://badsite.com', './connection_error/')
+        download('http://badqwref23site.com', './connection_error/')
