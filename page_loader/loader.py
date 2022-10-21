@@ -9,6 +9,13 @@ import requests as re
 from page_loader.loader_logs import logger
 
 
+def _exit_with_error(error_message, page_url, e):
+    print(error_message)
+    logger.error(f'Exception while downloading {page_url}')
+    logger.exception(e)
+    sys.exit()
+
+
 def _download_resource(resource_url, save_folder):
     resource = re.get(resource_url, stream=True)
     if resource.status_code // 100 != 2:
@@ -42,6 +49,8 @@ def _get_page(page_url, save_folder):
     logger.info(f'Dowloading {page_url}')
     bar = Bar('Downloading', max=100)
     response = re.get(page_url)
+    if response.status_code != 200:
+        raise re.exceptions.HTTPError()
     logger.info(f'Got {page_url} successfully')
     bar.next(20)
 
@@ -76,18 +85,12 @@ def _get_page(page_url, save_folder):
 def download(page_url, save_folder):
     try:
         _get_page(page_url, save_folder)
+    except re.exceptions.ConnectionError as e:
+        _exit_with_error(f"Can't get page at {page_url}", page_url, e)
     except re.exceptions.HTTPError as e:
-        print(f"Can't get page at {page_url}")
-        logger.error(f'HTTPError for {page_url}')
-        logger.exception(e)
-        sys.exit(1)
+        _exit_with_error('Website is not available', page_url, e)
     except IOError as e:
-        print("Can't write html file to disk")
-        logger.error(f'IOError for {page_url}')
-        logger.exception(e)
-        sys.exit(1)
+        _exit_with_error("Can't write html file to disk", page_url, e)
     except Exception as e:
-        print("Can't download page")
-        logger.error(f'Exception while downloading {page_url}')
-        logger.exception(e)
-        sys.exit(1)
+        _exit_with_error("Can't download page", page_url, e)
+        
