@@ -52,7 +52,10 @@ def test_page_loader():
 
 def test_connection_error():
     with pytest.raises(ConnectionError) as e:
+        if not os.path.isdir('./connection_error/'):
+            os.mkdir('./connection_error/')
         download('http://badqwref23site.com', './connection_error/')
+    shutil.rmtree('./connection_error/')
 
 
 def test_non_existing_path():
