@@ -93,4 +93,3 @@ def download(page_url, save_folder):
         _exit_with_error("Can't write html file to disk", page_url, e)
     except Exception as e:
         _exit_with_error("Can't download page", page_url, e)
-        
