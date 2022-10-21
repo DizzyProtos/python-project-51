@@ -3,6 +3,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 
 from bs4 import BeautifulSoup as soup
 
+import pytest
+from requests.exceptions import ConnectionError
 import shutil
 import requests_mock
 from page_loader.loader import download
@@ -47,3 +49,8 @@ def test_page_loader():
     assert str(downloaded_website) == str(correct_website)
     os.remove(output_file)
     shutil.rmtree(save_folder)
+
+
+def test_connection_error():
+    with pytest.raises(ConnectionError) as e:
+        download('http://badsite.com', './connection_error/')

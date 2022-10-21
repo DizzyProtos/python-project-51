@@ -1,5 +1,4 @@
 import os
-import sys
 import uuid
 import validators
 import shutil
@@ -7,13 +6,6 @@ from progress.bar import Bar
 from bs4 import BeautifulSoup as soup
 import requests as re
 from page_loader.loader_logs import logger
-
-
-def _exit_with_error(error_message, page_url, e):
-    print(error_message)
-    logger.error(f'Exception while downloading {page_url}')
-    logger.exception(e)
-    sys.exit()
 
 
 def _download_resource(resource_url, save_folder):
@@ -39,7 +31,7 @@ def _download_resource(resource_url, save_folder):
     return local_path
 
 
-def _get_page(page_url, save_folder):
+def download(page_url, save_folder):
     if page_url[-1] == '/':
         page_url = page_url[:-1]
 
@@ -80,16 +72,3 @@ def _get_page(page_url, save_folder):
     logger.info(f'Saving page to {save_file_path}')
     with open(save_file_path, 'w', encoding='utf-8') as html:
         html.write(website.prettify())
-
-
-def download(page_url, save_folder):
-    try:
-        _get_page(page_url, save_folder)
-    except re.exceptions.ConnectionError as e:
-        _exit_with_error(f"Can't get page at {page_url}", page_url, e)
-    except re.exceptions.HTTPError as e:
-        _exit_with_error('Website is not available', page_url, e)
-    except IOError as e:
-        _exit_with_error("Can't write html file to disk", page_url, e)
-    except Exception as e:
-        _exit_with_error("Can't download page", page_url, e)
