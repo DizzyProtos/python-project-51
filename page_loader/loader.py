@@ -7,6 +7,15 @@ import requests as re
 from page_loader.loader_logs import logger
 
 
+def _get_output_filename(page_url):
+    parsed_uri = urlparse(page_url)
+    netloc_str = parsed_uri.netloc.split('.')[0]
+    path_str = parsed_uri.path.replace('/', '-')
+    file_name = f"{netloc_str}{path_str}.html"
+    file_name = file_name.replace('/', os.path.sep)
+    return file_name
+
+
 def _download_resource(page_url, resource_path, save_folder):
     parsed_uri = urlparse(page_url)
     page_url = f'{parsed_uri.scheme}://{parsed_uri.netloc}'
@@ -26,6 +35,7 @@ def _download_resource(page_url, resource_path, save_folder):
 
     with open(local_path, 'wb') as output:
         shutil.copyfileobj(resource.raw, output)
+    return True
 
 
 def download(page_url, save_folder):
@@ -43,26 +53,28 @@ def download(page_url, save_folder):
     logger.info(f'Got {page_url} successfully')
     bar.next(20)
 
+    output_filename = _get_output_filename(page_url)
+    resources_folder = f"{output_filename.replace('.html', '_files')}"
+    resources_folder = os.path.join(save_folder, resources_folder)
+    if not os.path.isdir(resources_folder):
+        os.mkdir(resources_folder)
+
     website = soup(response.text, 'html.parser')
     resource_tags = ['img', 'link', 'script', 'a']
     resources = website.find_all(resource_tags)
     for tag in resources:
         if tag.has_attr('src'):
-            resource_url = tag['src']
-            if urlparse(resource_url).netloc:
+            src = tag['src']
+            if urlparse(src).netloc:
                 continue
             logger.info(f'Getting {tag.name} from {tag["src"]}')
-            success = _download_resource(page_url, resource_url, save_folder)
+            success = _download_resource(page_url, src, resources_folder)
             if not success:
-                logger.error(f"Can't download {resource_url}")
+                logger.error(f"Can't download {src}")
                 continue
         bar.next(80 // len(resources))
 
-    file_name = page_url.split('//')[1]
-    file_name = ''.join(file_name.split('.')[:-1])
-    file_name = ''.join([ch if ch.isalpha() else '-' for ch in file_name])
-    file_name += '.html'
-    save_file_path = os.path.join(save_folder, file_name)
+    save_file_path = os.path.join(save_folder, output_filename)
     logger.info(f'Saving page to {save_file_path}')
     with open(save_file_path, 'w', encoding='utf-8') as html:
         html.write(website.prettify())

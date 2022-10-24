@@ -31,6 +31,7 @@ def itterate_resources(html_text):
 
 def check_if_resources_exist(html_text, save_folder):
     for src in itterate_resources(html_text):
+        src = src.replace('/', os.path.sep)
         resource_path = os.path.join(save_folder, src)
         if not os.path.isfile(resource_path):
             return False
@@ -57,7 +58,7 @@ def test_page_loader(site_url):
     with open(htmp_page_path, 'r') as f:
         page_text = f.read()
     
-    save_folder = './tmp/'
+    save_folder = f'.{os.path.sep}tmp'
     if not os.path.isdir(save_folder):
         os.mkdir(save_folder)
     resources_urls = get_mocked_resources(page_text, site_url)
@@ -70,6 +71,7 @@ def test_page_loader(site_url):
 
     with open(output_file, 'r') as f:
         downloaded_text= f.read()
+    save_folder = output_file.replace('.html', '') + '_files'
     assert check_if_resources_exist(downloaded_text, save_folder)
 
     os.remove(output_file)
