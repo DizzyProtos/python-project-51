@@ -11,7 +11,7 @@ def _download_resource(page_url, resource_path, save_folder):
     parsed_uri = urlparse(page_url)
     page_url = f'{parsed_uri.scheme}://{parsed_uri.netloc}'
     if resource_path[0] == '/':
-        page_url = page_url[1:]
+        resource_path = resource_path[1:]
 
     resource = re.get(f'{page_url}/{resource_path}', stream=True)
     if resource.status_code // 100 != 2:
