@@ -35,7 +35,7 @@ def _download_resource(page_url, resource_path, save_folder):
 
     with open(local_path, 'wb') as output:
         shutil.copyfileobj(resource.raw, output)
-    return True
+    return local_path
 
 
 def download(page_url, save_folder):
@@ -68,8 +68,9 @@ def download(page_url, save_folder):
             if urlparse(src).netloc:
                 continue
             logger.info(f'Getting {tag.name} from {tag["src"]}')
-            success = _download_resource(page_url, src, resources_folder)
-            if not success:
+            resource_path = _download_resource(page_url, src, resources_folder)
+            logger.info(f'Saved {tag.name} to {resource_path}')
+            if not resource_path:
                 logger.error(f"Can't download {src}")
                 continue
         bar.next(80 // len(resources))
