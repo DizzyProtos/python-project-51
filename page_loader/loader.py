@@ -10,8 +10,8 @@ from page_loader.loader_logs import logger
 def _download_resource(page_url, resource_path, save_folder):
     parsed_uri = urlparse(page_url)
     page_url = f'{parsed_uri.scheme}://{parsed_uri.netloc}'
-    if page_url[-1] == '/':
-        page_url = page_url[:-1]
+    if resource_path[0] == '/':
+        page_url = page_url[1:]
 
     resource = re.get(f'{page_url}/{resource_path}', stream=True)
     if resource.status_code // 100 != 2:
@@ -48,10 +48,10 @@ def download(page_url, save_folder):
     resources = website.find_all(resource_tags)
     for tag in resources:
         if tag.has_attr('src'):
-            logger.info(f'Getting {tag.name} from {tag["src"]}')
             resource_url = tag['src']
             if urlparse(resource_url).netloc:
                 continue
+            logger.info(f'Getting {tag.name} from {tag["src"]}')
             success = _download_resource(page_url, resource_url, save_folder)
             if not success:
                 logger.error(f"Can't download {resource_url}")
