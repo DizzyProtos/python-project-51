@@ -81,7 +81,7 @@ def download(page_url, save_folder):
             continue
 
         netloc = urlparse(tag[attr]).netloc
-        if netloc == '' or parsed_url.netloc in netloc:
+        if netloc == '' or parsed_url.netloc == netloc:
             logger.info(f'Getting {tag.name} from {tag[attr]}')
             resource_path = _download_resource(page_url, tag[attr], resources_folder)
             if not resource_path:
