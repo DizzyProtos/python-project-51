@@ -9,7 +9,7 @@ from page_loader.loader_logs import logger
 
 def _get_output_filename(page_url):
     parsed_uri = urlparse(page_url)
-    netloc_str = parsed_uri.netloc.split('.')[0]
+    netloc_str = parsed_uri.netloc.replace('.', '-')
     path_str = parsed_uri.path.replace('/', '-')
     file_name = f"{netloc_str}{path_str}.html"
     file_name = file_name.replace('/', os.path.sep)
