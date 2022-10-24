@@ -6,52 +6,70 @@ from bs4 import BeautifulSoup as soup
 import pytest
 from requests.exceptions import ConnectionError
 import shutil
+from urllib.parse import urlparse
 import requests_mock
 from page_loader.loader import download
 
 
-def check_if_resource_exists(html_text, save_folder):
+site_url = 'mock://test_test.com'
+resource_tags = ['img', 'link', 'script', 'a']
+
+
+def itterate_resources(html_text):
     website = soup(html_text)
-    resource_tags = ['img', 'link', 'script', 'a']
     for resource in website.find_all(resource_tags):
         if not resource.has_attr('src'):
             continue
-        resource_path = os.path.join(save_folder, resource['src'])
+        if urlparse(resource['src']).netloc:
+            continue
+        yield resource['src']
+        
+
+def check_if_resources_exist(html_text, save_folder):
+    for src in itterate_resources(html_text):
+        resource_path = os.path.join(save_folder, src)
         if not os.path.isfile(resource_path):
             return False
     return True
 
 
+def get_mocked_resources(html_text):
+    mock_dict = {}
+    for src in itterate_resources(html_text):
+        mock_url = f'{site_url}/{src}'
+        resource_path = os.path.join('tests', 'fixtures', src)
+        resource_path = resource_path.replace('/', os.path.sep)
+        with open(resource_path, 'rb') as rf:
+            mock_dict[mock_url] = rf
+    return mock_dict
+
+
 def test_page_loader():
-    with open('tests/fixtures/page.html', 'r') as f:
+    htmp_page_path = 'tests/fixtures/page.html'
+    with open(htmp_page_path, 'r') as f:
         page_text = f.read()
     
-    site_url = 'mock://test_test.com'
     save_folder = './tmp/'
     if not os.path.isdir(save_folder):
         os.mkdir(save_folder)
+    resources_urls = get_mocked_resources(page_text)
     with requests_mock.Mocker(real_http=True) as m:
         m.get(site_url, text=page_text)
+        for mock_url, content in resources_urls.items():
+            m.get(mock_url, body=content)
+
         output_file = download(site_url, save_folder)
 
     with open(output_file, 'r') as f:
         downloaded_text= f.read()
-    assert check_if_resource_exists(downloaded_text, save_folder)
-    downloaded_website = soup(downloaded_text, 'html.parser')
-    for tag in downloaded_website.find_all():
-        tag.attrs.pop('src', None)
-    with open('tests/fixtures/correct_page.html', 'r') as f:
-        correct_output = f.read()
-    correct_website = soup(correct_output)
-    for tag in correct_website.find_all():
-        tag.attrs.pop('src', None)
-    assert str(downloaded_website) == str(correct_website)
+    assert check_if_resources_exist(downloaded_text, save_folder)
+
     os.remove(output_file)
     shutil.rmtree(save_folder)
 
 
 def test_connection_error():
-    with pytest.raises(ConnectionError) as e:
+    with pytest.raises(ConnectionError):
         if not os.path.isdir('./connection_error/'):
             os.mkdir('./connection_error/')
         download('http://badqwref23site.com', './connection_error/')

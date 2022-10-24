@@ -1,34 +1,28 @@
 import os
-import uuid
-import validators
 import shutil
+from urllib.parse import urlparse
 from progress.bar import Bar
 from bs4 import BeautifulSoup as soup
 import requests as re
 from page_loader.loader_logs import logger
 
 
-def _download_resource(resource_url, save_folder):
-    resource = re.get(resource_url, stream=True)
+def _download_resource(page_url, resource_path, save_folder):
+    if resource_path[0] == '/':
+        resource_path = resource_path[1:]
+    resource = re.get(f'{page_url}/{resource_path}', stream=True)
     if resource.status_code // 100 != 2:
         return None
 
-    local_path = resource_url.split('//')[1].replace('/', os.path.sep)
-    resource_path = os.path.join(save_folder, local_path)
+    local_path = resource_path.replace('/', os.path.sep)
+    local_path = os.path.join(save_folder, local_path)
     try:
-        os.makedirs(os.sep.join(resource_path.split(os.path.sep)[:-1]))
+        os.makedirs(os.path.split(local_path)[0])
     except FileExistsError:
         pass
 
-    if resource_path[-1] == os.path.sep:
-        filename = uuid.uuid4().hex
-        resource_path += filename
-        local_path += filename
-
-    with open(resource_path, 'wb') as output:
+    with open(local_path, 'wb') as output:
         shutil.copyfileobj(resource.raw, output)
-
-    return local_path
 
 
 def download(page_url, save_folder):
@@ -53,15 +47,12 @@ def download(page_url, save_folder):
         if tag.has_attr('src'):
             logger.info(f'Getting {tag.name} from {tag["src"]}')
             resource_url = tag['src']
-            if not validators.url(resource_url):
-                if resource_url[0] == '/':
-                    resource_url = resource_url[1:]
-                resource_url = f'{page_url}/{resource_url}'
-            local_path = _download_resource(resource_url, save_folder)
-            if not local_path:
+            if urlparse(resource_url).netloc:
+                continue
+            success = _download_resource(page_url, resource_url, save_folder)
+            if not success:
                 logger.error(f"Can't download {resource_url}")
                 continue
-            tag['src'] = local_path
         bar.next(80 // len(resources))
 
     file_name = page_url.split('//')[1]
