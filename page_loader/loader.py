@@ -54,6 +54,7 @@ def download(page_url, save_folder):
     if response.status_code != 200:
         raise re.exceptions.HTTPError()
     logger.info(f'Got {page_url} successfully')
+    logger.info(response.text)
     bar.next(20)
 
     output_filename = _get_output_filename(page_url)
