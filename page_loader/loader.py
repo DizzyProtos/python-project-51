@@ -68,16 +68,25 @@ def download(page_url, save_folder):
     resources = website.find_all(resource_tags)
     for tag in resources:
         if tag.has_attr('src'):
-            src = tag['src']
-            if urlparse(src).netloc:
+            tag_path = tag['src']
+        elif tag.has_attr('href'):
+            tag_path = tag['href']
+        else:
+            tag_path = ''
+
+        if tag_path:
+            if urlparse(tag_path).netloc:
                 continue
-            logger.info(f'Getting {tag.name} from {tag["src"]}')
-            resource_path = _download_resource(page_url, src, resources_folder)
+            logger.info(f'Getting {tag.name} from {tag_path}')
+            resource_path = _download_resource(page_url, tag_path, resources_folder)
             if not resource_path:
-                logger.error(f"Can't download {src}")
+                logger.error(f"Can't download {tag_path}")
                 continue
             logger.info(f'Saved {tag.name} to {resource_path}')
-            tag['src'] = resource_path
+            if tag.has_attr('src'):
+                tag['src'] = resource_path
+            elif tag.has_attr('href'):
+                tag['href'] = resource_path
         bar.next(80 // len(resources))
 
     save_file_path = os.path.join(save_folder, output_filename)
