@@ -71,7 +71,6 @@ def test_page_loader(site_url):
 
     with open(output_file, 'r') as f:
         downloaded_text= f.read()
-    save_folder = output_file.replace('.html', '') + '_files'
     assert check_if_resources_exist(downloaded_text, save_folder)
 
     os.remove(output_file)

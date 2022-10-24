@@ -26,8 +26,10 @@ def _download_resource(page_url, resource_path, save_folder):
     if resource.status_code // 100 != 2:
         return None
 
-    local_path = resource_path.replace('/', os.path.sep)
-    local_path = os.path.join(save_folder, local_path)
+    parsed_uri = urlparse(page_url)
+    netloc_str = parsed_uri.netloc.replace('.', '-')
+    resource_name = f"{netloc_str}-{resource_path.replace('/', '-')}"
+    local_path = os.path.join(save_folder, resource_name)
     try:
         os.makedirs(os.path.split(local_path)[0])
     except FileExistsError:
@@ -35,7 +37,8 @@ def _download_resource(page_url, resource_path, save_folder):
 
     with open(local_path, 'wb') as output:
         shutil.copyfileobj(resource.raw, output)
-    return local_path
+    asset_path = '/'.join(local_path.split(os.path.sep)[-2:])
+    return asset_path
 
 
 def download(page_url, save_folder):
@@ -69,10 +72,11 @@ def download(page_url, save_folder):
                 continue
             logger.info(f'Getting {tag.name} from {tag["src"]}')
             resource_path = _download_resource(page_url, src, resources_folder)
-            logger.info(f'Saved {tag.name} to {resource_path}')
             if not resource_path:
                 logger.error(f"Can't download {src}")
                 continue
+            logger.info(f'Saved {tag.name} to {resource_path}')
+            tag['src'] = resource_path
         bar.next(80 // len(resources))
 
     save_file_path = os.path.join(save_folder, output_filename)
