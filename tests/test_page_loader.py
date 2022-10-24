@@ -11,8 +11,12 @@ import requests_mock
 from page_loader.loader import download
 
 
-site_url = 'mock://test_test.com'
+
 resource_tags = ['img', 'link', 'script', 'a']
+site_urls = [
+    'mock://test_test.com',
+    'mock://test_test.com/my/wer/wer/wer'
+]
 
 
 def itterate_resources(html_text):
@@ -33,7 +37,10 @@ def check_if_resources_exist(html_text, save_folder):
     return True
 
 
-def get_mocked_resources(html_text):
+def get_mocked_resources(html_text, site_url):
+    parsed_uri = urlparse(site_url)
+    site_url = f'{parsed_uri.scheme}://{parsed_uri.netloc}'
+
     mock_dict = {}
     for src in itterate_resources(html_text):
         mock_url = f'{site_url}/{src}'
@@ -44,7 +51,8 @@ def get_mocked_resources(html_text):
     return mock_dict
 
 
-def test_page_loader():
+@pytest.mark.parametrize('site_url', site_urls)
+def test_page_loader(site_url):
     htmp_page_path = 'tests/fixtures/page.html'
     with open(htmp_page_path, 'r') as f:
         page_text = f.read()
@@ -52,7 +60,7 @@ def test_page_loader():
     save_folder = './tmp/'
     if not os.path.isdir(save_folder):
         os.mkdir(save_folder)
-    resources_urls = get_mocked_resources(page_text)
+    resources_urls = get_mocked_resources(page_text, site_url)
     with requests_mock.Mocker(real_http=True) as m:
         m.get(site_url, text=page_text)
         for mock_url, content in resources_urls.items():
