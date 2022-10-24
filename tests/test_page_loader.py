@@ -27,23 +27,23 @@ def itterate_resources(html_text):
             attr = 'href'
         else:
             continue
-        netloc = urlparse(resource[attr]).netloc
-        if not netloc or netloc != parsed_site.netloc:
+        if 'site-com_files' not in resource[attr]:
             continue
         yield resource[attr]
         
 
 def check_if_resources_exist(html_text, save_folder):
+    count = 0
     for src in itterate_resources(html_text):
         src = src.replace('/', os.path.sep)
         resource_path = os.path.join(save_folder, src)
         if not os.path.isfile(resource_path):
             return False
-    return True
+        count += 1
+    return count
 
 
 def test_page_loader():
-
     htmp_page_path = 'tests/fixtures/page.html'
     with open(htmp_page_path, 'r') as f:
         page_text = f.read()
@@ -66,7 +66,8 @@ def test_page_loader():
 
     with open(output_file, 'r', encoding='utf-8') as f:
         downloaded_text= f.read()
-    assert check_if_resources_exist(downloaded_text, save_folder)
+    
+    assert check_if_resources_exist(downloaded_text, save_folder) == 4
 
     os.remove(output_file)
     shutil.rmtree(save_folder)

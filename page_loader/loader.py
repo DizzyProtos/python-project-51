@@ -32,7 +32,7 @@ def _download_resource(page_url, resource_path, save_folder):
     parsed_uri = urlparse(resource_uri)
     host_part = parsed_uri.netloc.replace('.', '-')
     path_part = parsed_uri.path.replace('/', '-')
-    resource_name = f"{host_part}-{path_part}"
+    resource_name = f"{host_part}{path_part}"
     local_path = os.path.join(save_folder, resource_name)
     try:
         os.makedirs(os.path.split(local_path)[0])
@@ -81,15 +81,14 @@ def download(page_url, save_folder):
             continue
 
         netloc = urlparse(tag[attr]).netloc
-        if not netloc or netloc != parsed_url.netloc:
-            continue
-        logger.info(f'Getting {tag.name} from {tag[attr]}')
-        resource_path = _download_resource(page_url, tag[attr], resources_folder)
-        if not resource_path:
-            logger.error(f"Can't download {tag[attr]}")
-            continue
-        logger.info(f'Saved {tag.name} to {resource_path}')
-        tag[attr] = resource_path
+        if netloc == '' or parsed_url.netloc in netloc:
+            logger.info(f'Getting {tag.name} from {tag[attr]}')
+            resource_path = _download_resource(page_url, tag[attr], resources_folder)
+            if not resource_path:
+                logger.error(f"Can't download {tag[attr]}")
+                continue
+            logger.info(f'Saved {tag.name} to {resource_path}')
+            tag[attr] = resource_path
         bar.next(80 // len(resources))
 
     save_file_path = os.path.join(save_folder, output_filename)
