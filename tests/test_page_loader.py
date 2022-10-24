@@ -13,20 +13,24 @@ from page_loader.loader import download
 
 
 resource_tags = ['img', 'link', 'script', 'a']
-site_urls = [
-    'mock://test_test.com',
-    'mock://test_test.com/my/wer/wer/wer'
-]
+site_url = 'https://site.com/'
 
 
 def itterate_resources(html_text):
+    parsed_site = urlparse(site_url)
     website = soup(html_text)
     for resource in website.find_all(resource_tags):
-        if not resource.has_attr('src'):
+        attr = ''
+        if resource.has_attr('src'):
+            attr = 'src'
+        elif resource.has_attr('href'):
+            attr = 'href'
+        else:
             continue
-        if urlparse(resource['src']).netloc:
+        netloc = urlparse(resource[attr]).netloc
+        if not netloc or netloc != parsed_site.netloc:
             continue
-        yield resource['src']
+        yield resource[attr]
         
 
 def check_if_resources_exist(html_text, save_folder):
@@ -38,22 +42,8 @@ def check_if_resources_exist(html_text, save_folder):
     return True
 
 
-def get_mocked_resources(html_text, site_url):
-    parsed_uri = urlparse(site_url)
-    site_url = f'{parsed_uri.scheme}://{parsed_uri.netloc}'
+def test_page_loader():
 
-    mock_dict = {}
-    for src in itterate_resources(html_text):
-        mock_url = f'{site_url}/{src}'
-        resource_path = os.path.join('tests', 'fixtures', src)
-        resource_path = resource_path.replace('/', os.path.sep)
-        with open(resource_path, 'rb') as rf:
-            mock_dict[mock_url] = rf
-    return mock_dict
-
-
-@pytest.mark.parametrize('site_url', site_urls)
-def test_page_loader(site_url):
     htmp_page_path = 'tests/fixtures/page.html'
     with open(htmp_page_path, 'r') as f:
         page_text = f.read()
@@ -61,7 +51,12 @@ def test_page_loader(site_url):
     save_folder = f'.{os.path.sep}tmp'
     if not os.path.isdir(save_folder):
         os.mkdir(save_folder)
-    resources_urls = get_mocked_resources(page_text, site_url)
+    resources_urls = {
+        'https://site.com/assets/scripts.js': 'file:///C:/Users/medve/Desktop/python-project-51/tests/fixtures/scripts.js',
+        'https://site.com/photos/me.jpg': 'file:///C:/Users/medve/Desktop/python-project-51/tests/fixtures/photos/me.jpg',
+        'https://site.com/blog/about/assets/styles.css': 'file:///C:/Users/medve/Desktop/python-project-51/tests/fixtures/assets/styles.css',
+        'https://cdn2.site.com/blog/assets/style.css': 'file:///C:/Users/medve/Desktop/python-project-51/tests/fixtures/assets/styles.css'
+    }
     with requests_mock.Mocker(real_http=True) as m:
         m.get(site_url, text=page_text)
         for mock_url, content in resources_urls.items():
@@ -69,7 +64,7 @@ def test_page_loader(site_url):
 
         output_file = download(site_url, save_folder)
 
-    with open(output_file, 'r') as f:
+    with open(output_file, 'r', encoding='utf-8') as f:
         downloaded_text= f.read()
     assert check_if_resources_exist(downloaded_text, save_folder)
 
