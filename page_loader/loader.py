@@ -99,4 +99,5 @@ def download(page_url, save_folder):
     logger.info(f'Saving page to {save_file_path}')
     with open(save_file_path, 'w') as html:
         html.write(website.prettify())
+    bar.finish()
     return save_file_path
