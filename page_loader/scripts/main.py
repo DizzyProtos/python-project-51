@@ -20,7 +20,7 @@ def main(*args, **kwargs):
 
     args = parser.parse_args()
     try:
-        download(args.url, args.save_path)
+        html_path = download(args.url, args.save_path)
     except ConnectionError as e:
         _exit_with_error(f"Can't get page at {args.url}", args.url, e)
     except HTTPError as e:
@@ -29,7 +29,7 @@ def main(*args, **kwargs):
         _exit_with_error("Can't write html file to disk", args.url, e)
     except Exception as e:
         _exit_with_error("Can't download page", args.url, e)
-    sys.exit(0)
+    print(f'Page saved as "{html_path}"')
 
 
 if __name__ == '__main__':
