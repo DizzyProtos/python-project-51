@@ -8,7 +8,7 @@ packages = [{include = "page_loader"}]
 
 
 [tool.poetry.scripts]
-page_loader = "page_loader.scripts.main:main"
+page-loader = "page_loader.scripts.main:main"
 
 
 [tool.poetry.dependencies]
