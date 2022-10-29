@@ -7,6 +7,13 @@ import requests as re
 from page_loader.loader_logs import logger
 
 
+ATTRS_MAP = {
+    'link': 'href',
+    'img': 'src',
+    'script': 'src'
+}
+
+
 def _get_output_filename(page_url):
     parsed_uri = urlparse(page_url)
     netloc_str = parsed_uri.netloc.replace('.', '-')
@@ -58,7 +65,6 @@ def download(page_url, save_folder):
     if response.status_code != 200:
         raise re.exceptions.HTTPError()
     logger.info(f'Got {page_url} successfully')
-    logger.info(response.text)
     bar.next(20)
 
     output_filename = _get_output_filename(page_url)
@@ -69,19 +75,13 @@ def download(page_url, save_folder):
 
     parsed_url = urlparse(page_url)
     website = soup(response.text, 'html.parser')
-    resource_tags = ['img', 'link', 'script', 'a']
-    resources = website.find_all(resource_tags)
+
+    resources = website.find_all(ATTRS_MAP.keys())
     for tag in resources:
-        attr = ''
-        if tag.has_attr('src'):
-            attr = 'src'
-        elif tag.has_attr('href'):
-            attr = 'href'
-        else:
-            continue
+        attr = ATTRS_MAP[tag.name]
 
         netloc = urlparse(tag[attr]).netloc
-        if (netloc == '' and '.' in tag[attr]) or parsed_url.netloc == netloc:
+        if (netloc == '') or parsed_url.netloc == netloc:
             logger.info(f'Getting {tag.name} from {tag[attr]}')
             resource_path = _download_resource(page_url, tag[attr], resources_folder)
             if not resource_path:

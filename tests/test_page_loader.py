@@ -55,6 +55,7 @@ def test_page_loader():
         'https://site.com/assets/scripts.js': 'file:///C:/Users/medve/Desktop/python-project-51/tests/fixtures/scripts.js',
         'https://site.com/photos/me.jpg': 'file:///C:/Users/medve/Desktop/python-project-51/tests/fixtures/photos/me.jpg',
         'https://site.com/blog/about/assets/styles.css': 'file:///C:/Users/medve/Desktop/python-project-51/tests/fixtures/assets/styles.css',
+        'https://site.com/blog/about': 'file:///C:/Users/medve/Desktop/python-project-51/tests/fixtures/about.html',
     }
     with requests_mock.Mocker(real_http=True) as m:
         m.get(site_url, text=page_text)
@@ -66,7 +67,7 @@ def test_page_loader():
     with open(output_file, 'r', encoding='utf-8') as f:
         downloaded_text= f.read()
     
-    assert check_if_resources_exist(downloaded_text, save_folder) == 3
+    assert check_if_resources_exist(downloaded_text, save_folder) == 4
 
     os.remove(output_file)
     shutil.rmtree(save_folder)
