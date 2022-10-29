@@ -81,6 +81,8 @@ def download(page_url, save_folder):
     resources = website.find_all(ATTRS_MAP.keys())
     for tag in resources:
         attr = ATTRS_MAP[tag.name]
+        if not tag.has_attr(attr):
+            continue
 
         netloc = urlparse(tag[attr]).netloc
         if (netloc == '') or parsed_url.netloc == netloc:
