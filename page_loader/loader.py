@@ -40,6 +40,8 @@ def _download_resource(page_url, resource_path, save_folder):
     host_part = parsed_uri.netloc.replace('.', '-')
     path_part = parsed_uri.path.replace('/', '-')
     resource_name = f"{host_part}{path_part}"
+    if '.' not in resource_name:
+        resource_name += '.html'
     local_path = os.path.join(save_folder, resource_name)
     try:
         os.makedirs(os.path.split(local_path)[0])
@@ -93,6 +95,6 @@ def download(page_url, save_folder):
 
     save_file_path = os.path.join(save_folder, output_filename)
     logger.info(f'Saving page to {save_file_path}')
-    with open(save_file_path, 'w', encoding='utf-8') as html:
+    with open(save_file_path, 'w') as html:
         html.write(website.prettify())
     return save_file_path

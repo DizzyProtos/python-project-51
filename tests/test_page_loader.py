@@ -4,6 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 from bs4 import BeautifulSoup as soup
 
 import pytest
+import filecmp
 from requests.exceptions import ConnectionError
 import shutil
 from urllib.parse import urlparse
@@ -64,10 +65,11 @@ def test_page_loader():
 
         output_file = download(site_url, save_folder)
 
-    with open(output_file, 'r', encoding='utf-8') as f:
+    with open(output_file, 'r') as f:
         downloaded_text= f.read()
     
     assert check_if_resources_exist(downloaded_text, save_folder) == 4
+    assert filecmp.cmp(output_file, './tests/fixtures/correct_page.html')
 
     os.remove(output_file)
     shutil.rmtree(save_folder)
