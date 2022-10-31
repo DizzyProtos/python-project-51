@@ -15,3 +15,6 @@ Commands:
 - make install - configure env and install packages
 - make build - build project, saves wheel file to ./dist/
 
+
+Example on asciinema
+https://asciinema.org/a/unxUQ2kWhwyr7jJ5d3TzmBUP2
