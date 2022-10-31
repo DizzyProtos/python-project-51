@@ -12,3 +12,6 @@ check:
 
 test-coverage:
 	poetry run pytest --cov=page_loader tests --cov-report xml
+
+package-install:
+	pip install --user dist/*.whl
