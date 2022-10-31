@@ -1,16 +1,13 @@
-import sys, os
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
-
+import json
+import os
 from bs4 import BeautifulSoup as soup
 
 import pytest
 import filecmp
 from requests.exceptions import ConnectionError
 import shutil
-from urllib.parse import urlparse
 import requests_mock
 from page_loader.loader import download
-
 
 
 resource_tags = ['img', 'link', 'script', 'a']
@@ -18,7 +15,6 @@ site_url = 'https://site.com/'
 
 
 def itterate_resources(html_text):
-    parsed_site = urlparse(site_url)
     website = soup(html_text)
     for resource in website.find_all(resource_tags):
         attr = ''
@@ -31,7 +27,7 @@ def itterate_resources(html_text):
         if 'site-com_files' not in resource[attr]:
             continue
         yield resource[attr]
-        
+
 
 def check_if_resources_exist(html_text, save_folder):
     count = 0
@@ -48,16 +44,14 @@ def test_page_loader():
     htmp_page_path = 'tests/fixtures/page.html'
     with open(htmp_page_path, 'r') as f:
         page_text = f.read()
-    
+
     save_folder = f'.{os.path.sep}tmp'
     if not os.path.isdir(save_folder):
         os.mkdir(save_folder)
-    resources_urls = {
-        'https://site.com/assets/scripts.js': 'file:///C:/Users/medve/Desktop/python-project-51/tests/fixtures/scripts.js',
-        'https://site.com/photos/me.jpg': 'file:///C:/Users/medve/Desktop/python-project-51/tests/fixtures/photos/me.jpg',
-        'https://site.com/blog/about/assets/styles.css': 'file:///C:/Users/medve/Desktop/python-project-51/tests/fixtures/assets/styles.css',
-        'https://site.com/blog/about': 'file:///C:/Users/medve/Desktop/python-project-51/tests/fixtures/about.html',
-    }
+
+    with open('tests/fixtures/resources_urls.json', 'r') as f:
+        resources_urls = json.load(f)
+
     with requests_mock.Mocker(real_http=True) as m:
         m.get(site_url, text=page_text)
         for mock_url, content in resources_urls.items():
@@ -66,8 +60,8 @@ def test_page_loader():
         output_file = download(site_url, save_folder)
 
     with open(output_file, 'r') as f:
-        downloaded_text= f.read()
-    
+        downloaded_text = f.read()
+
     assert check_if_resources_exist(downloaded_text, save_folder) == 4
     assert filecmp.cmp(output_file, './tests/fixtures/correct_page.html')
 
@@ -84,5 +78,5 @@ def test_connection_error():
 
 
 def test_non_existing_path():
-    with pytest.raises(IOError) as e:
+    with pytest.raises(IOError):
         download('http://google.com', './ioerror/ioerror/ioerror/')
