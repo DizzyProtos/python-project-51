@@ -43,7 +43,7 @@ def mocker(html_page, resources):
     local_file_uri = f"file:///{os.getcwd().replace(os.path.sep, '/')}"
     with requests_mock.Mocker(real_http=False) as mock:
         mock.get(site_url, text=html_page)
-        for mock_url, file_path in resources.items():            
+        for mock_url, file_path in resources.items():
             file_uri = f'{local_file_uri}/{file_path}'
             mock.get(mock_url, body=file_uri)
         yield mock
