@@ -2,6 +2,7 @@ import os
 import shutil
 from urllib.parse import urlparse
 import requests as re
+from requests.compat import urljoin
 
 
 def _get_resource_local_path(resource_uri, save_folder):
@@ -15,14 +16,10 @@ def _get_resource_local_path(resource_uri, save_folder):
 
 
 def _fetch_resource(page_url, resource_path):
-    parsed_uri = urlparse(page_url)
-    page_url = f'{parsed_uri.scheme}://{parsed_uri.netloc}'
-    if resource_path[0] == '/':
-        resource_path = resource_path[1:]
-
-    resource_uri = f'{page_url}/{resource_path}'
     if urlparse(resource_path).netloc:
         resource_uri = resource_path
+    else:
+        resource_uri = urljoin(page_url, resource_path)
     resource = re.get(resource_uri, stream=True)
     if resource.status_code // 100 != 2:
         return None
