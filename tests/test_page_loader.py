@@ -52,10 +52,12 @@ def test_page_loader():
     with open('tests/fixtures/resources_urls.json', 'r') as f:
         resources_urls = json.load(f)
 
+    local_file_uri = f"file:///{os.getcwd().replace(os.path.sep, '/')}"
     with requests_mock.Mocker(real_http=True) as m:
         m.get(site_url, text=page_text)
-        for mock_url, content in resources_urls.items():
-            m.get(mock_url, body=content)
+        for mock_url, file_path in resources_urls.items():            
+            file_uri = f'{local_file_uri}/{file_path}'
+            m.get(mock_url, body=file_uri)
 
         output_file = download(site_url, save_folder)
 

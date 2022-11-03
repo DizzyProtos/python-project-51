@@ -1,6 +1,6 @@
 {
-    "https://site.com/assets/scripts.js": "file:///C:/Users/medve/Desktop/python-project-51/tests/fixtures/scripts.js",
-    "https://site.com/photos/me.jpg": "file:///C:/Users/medve/Desktop/python-project-51/tests/fixtures/photos/me.jpg",
-    "https://site.com/blog/about/assets/styles.css": "file:///C:/Users/medve/Desktop/python-project-51/tests/fixtures/assets/styles.css",
-    "https://site.com/blog/about": "file:///C:/Users/medve/Desktop/python-project-51/tests/fixtures/about.html"
+    "https://site.com/assets/scripts.js": "tests/fixtures/scripts.js",
+    "https://site.com/photos/me.jpg": "tests/fixtures/photos/me.jpg",
+    "https://site.com/blog/about/assets/styles.css": "tests/fixtures/assets/styles.css",
+    "https://site.com/blog/about": "tests/fixtures/about.html"
 }
