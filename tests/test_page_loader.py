@@ -92,6 +92,6 @@ def test_connection_error(output_folder):
         download('http://badqwref23site.com', output_folder)
 
 
-def test_non_existing_path(output_folder):
+def test_non_existing_path():
     with pytest.raises(IOError):
-        download('http://google.com', output_folder)
+        download('http://google.com', '/p/a/t/h')
