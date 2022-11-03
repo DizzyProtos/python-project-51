@@ -23,23 +23,26 @@ def _get_output_filename(page_url):
     return file_name
 
 
+def _iterate_resource_tags(resources, page_url):
+    for tag in resources:
+        attr = ATTRS_MAP[tag.name]
+        if not tag.has_attr(attr):
+            continue
+        parsed_url = urlparse(page_url)
+        netloc = urlparse(tag[attr]).netloc
+        if (netloc == '') or parsed_url.netloc == netloc:
+            yield tag
+
+
 def _fetch_resource(tag, page_url, save_folder):
     attr = ATTRS_MAP[tag.name]
-    if not tag.has_attr(attr):
+    logger.info(f'Getting {tag.name} from {tag[attr]}')
+    resource_path = download_resource(page_url, tag[attr], save_folder)
+    if not resource_path:
+        logger.error(f"Can't download {tag[attr]}")
         return None
-    parsed_url = urlparse(page_url)
-    netloc = urlparse(tag[attr]).netloc
-    if (netloc == '') or parsed_url.netloc == netloc:
-        logger.info(f'Getting {tag.name} from {tag[attr]}')
-        resource_path = download_resource(page_url, tag[attr], save_folder)
-        if not resource_path:
-            logger.error(f"Can't download {tag[attr]}")
-            return None
-        logger.info(f'Saved {tag.name} to {resource_path}')
-        tag[attr] = resource_path
-        return resource_path
-    else:
-        return None
+    logger.info(f'Saved {tag.name} to {resource_path}')
+    return resource_path
 
 
 def download(page_url, save_folder):
@@ -63,17 +66,18 @@ def download(page_url, save_folder):
     if not os.path.isdir(resources_folder):
         os.mkdir(resources_folder)
 
-    website = soup(response.text, 'html.parser')
-    resources = website.find_all(ATTRS_MAP.keys())
-    for tag in resources:
+    parsed_html = soup(response.text, 'html.parser')
+    resources = parsed_html.find_all(ATTRS_MAP.keys())
+    for tag in _iterate_resource_tags(resources, page_url):
         resource_path = _fetch_resource(tag, page_url, resources_folder)
         if not resource_path:
             continue
+        tag[ATTRS_MAP[tag.name]] = resource_path
         bar.next(80 // len(resources))
 
     save_file_path = os.path.join(save_folder, output_filename)
     logger.info(f'Saving page to {save_file_path}')
     with open(save_file_path, 'w') as html:
-        html.write(website.prettify())
+        html.write(parsed_html.prettify())
     bar.finish()
     return save_file_path
